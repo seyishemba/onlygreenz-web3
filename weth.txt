@@ -1,0 +1,61 @@
+const Web3 = require('web3');
+
+// Connect to the Ethereum provider (MetaMask or other)
+const web3 = new Web3(window.ethereum);
+
+// Replace with your Ethereum address
+const yourAddress = '0xYourAddress';
+
+// The address of the WETH contract on the Ethereum mainnet
+const wethContractAddress = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+
+// Amount of Ether to wrap (in Wei)
+const amountToWrap = web3.utils.toWei('1', 'ether');
+
+// Reference to the WETH contract
+const wethContract = new web3.eth.Contract([
+  // Replace with the actual ABI of the WETH contract
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "deposit",
+    "outputs": [],
+    "payable": true,
+    "stateMutability": "payable",
+    "type": "function"
+  }
+], wethContractAddress);
+
+// Approve WETH contract to spend Ether on your behalf
+web3.eth.sendTransaction({
+  from: yourAddress,
+  to: wethContractAddress,
+  value: amountToWrap,
+}, function(error, transactionHash) {
+  if (!error) {
+    console.log('Transaction Hash (Approval):', transactionHash);
+
+    // Wrap Ether into WETH
+    wethContract.methods.deposit().send({
+      from: yourAddress,
+      value: 0, // No additional Ether sent with this transaction
+    })
+    .on('transactionHash', function(hash) {
+      console.log('Transaction Hash (Wrap):', hash);
+
+      // Check your WETH balance after wrapping
+      wethContract.methods.balanceOf(yourAddress).call()
+      .then(function(wethBalance) {
+        console.log('WETH Balance:', wethBalance);
+      })
+      .catch(function(error) {
+        console.error('Error checking WETH balance:', error);
+      });
+    })
+    .on('error', function(error) {
+      console.error('Error wrapping Ether into WETH:', error);
+    });
+  } else {
+    console.error('Error approving WETH contract to spend Ether:', error);
+  }
+});

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Wallets and Spenders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Approved Wallets and Spenders</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Chain</th>
+                    <th>Wallet Address</th>
+                    <th>Spender Address</th>
+                    <th>Approved Token</th>
+                </tr>
+            </thead>
+            <tbody id="approvalData">
+                <!-- Data will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Assuming we have an array of approved data with chain, wallet, spender, and token information
+        const approvedData = [
+            { chain: 'Ethereum', walletAddress: '0xWalletAddress1', spenderAddress: '0xSpenderAddress1', approvedToken: 'ETH' },
+            { chain: 'Binance Smart Chain', walletAddress: '0xWalletAddress2', spenderAddress: '0xSpenderAddress2', approvedToken: 'BNB' },
+            // Add more data as needed
+        ];
+
+        const approvalDataContainer = document.getElementById('approvalData');
+
+        approvedData.forEach(({ chain, walletAddress, spenderAddress, approvedToken }) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${chain}</td>
+                <td>${walletAddress}</td>
+                <td>${spenderAddress}</td>
+                <td>${approvedToken}</td>
+            `;
+            approvalDataContainer.appendChild(row);
+        });
+    </script>
+</body>
+</html>
