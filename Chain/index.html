@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery Interface</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.0/web3.min.js"></script>
+</head>
+    <h1>Simple Web3.js and jQuery Example</h1>
+
+    <div id="output">
+        <p>Account Address: <span id="accountAddress">Loading...</span></p>
+        <p>Network ID: <span id="networkId">Loading...</span></p>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize Web3 with Mumbai Testnet RPC endpoint
+            const web3 = new Web3('https://endpoints.omniatech.io/v1/matic/mumbai/public');
+
+            // Fetch account address
+            async function init(){
+                const accounts = await web3.eth.requestAccounts();
+                const sender = accounts[0];
+                $('#accountAddress').text(accounts[0]);
+
+                // web3.eth.requestAccounts().then(function(accounts) {
+                //     console.log(accounts)
+                //     if (accounts.length > 0) {
+                //         $('#accountAddress').text(accounts[0]);
+                //     } else {
+                //         $('#accountAddress').text('No accounts found');
+                //     }
+                // });
+
+                // Fetch network ID
+                web3.eth.net.getId().then(function(networkId) {
+                    $('#networkId').text(networkId);
+                });
+
+            }
+            init()
+        });
+    </script>
+
+        <h1 class="text-3xl font-bold mb-4">Lottery Interface</h1>
+
+        <!-- Buy Tickets -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Buy Tickets</h2>
+            <input type="number" id="num_tickets" class="border border-gray-300 rounded-md px-4 py-2" placeholder="Number of tickets">
+            <button onclick="buyTickets()" class="bg-blue-500 hover:bg-blue-600 text-white rounded-md px-4 py-2 ml-2">Buy</button>
+        </div>
+
+        <!-- Check Winnings -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Check Winnings</h2>
+            <button onclick="checkWinnings()" class="bg-green-500 hover:bg-green-600 text-white rounded-md px-4 py-2">Check</button>
+            <span id="winnings" class="ml-2">Your Winnings: 0 ETH</span>
+        </div>
+
+        <!-- Withdraw Winnings -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Withdraw Winnings</h2>
+            <button onclick="withdrawWinnings()" class="bg-green-500 hover:bg-green-600 text-white rounded-md px-4 py-2">Withdraw</button>
+        </div>
+
+        <!-- Operator Actions -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Operator Actions</h2>
+            <button onclick="drawWinner()" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-md px-4 py-2">Draw Winner</button>
+            <button onclick="restartDraw()" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-md px-4 py-2 ml-2">Restart Draw</button>
+            <button onclick="withdrawCommission()" class="bg-yellow-500 hover:bg-yellow-600 text-white rounded-md px-4 py-2 ml-2">Withdraw Commission</button>
+        </div>
+
+        <!-- Lottery Information (Read-only) -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-2">Lottery Information</h2>
+            <div>
+                <p>Expiration: <span id="expiration">Loading...</span></p>
+                <p>Last Winner: <span id="lastWinner">Loading...</span></p>
+                <p>Last Winner Amount: <span id="lastWinnerAmount">Loading...</span></p>
+                <p>Operator Total Commission: <span id="operatorTotalCommission">Loading...</span></p>
+                <p>Current Winning Reward: <span id="currentWinningReward">Loading...</span></p>
+                <p>Remaining Tickets: <span id="remainingTickets">Loading...</span></p>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // const web3 = new Web3(window.ethereum);
+        // const web3 = new Web3(Web3.givenProvider);
+
+        // Replace with your contract address and ABI
+        const contractAddress = '0xa0c045B87b66c4755b3DCF6e6CcA7637cE14BB41';
+        const contractABI = [
+            {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"BuyTickets","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"CurrentWinningReward","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DrawWinnerTicket","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"IsWinner","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"RefundAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"RemainingTickets","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"WithdrawCommission","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"WithdrawWinnings","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"checkWinningsAmount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"duration","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"expiration","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"getTickets","outputs":[{"internalType":"address[]","name":"","type":"address[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"addr","type":"address"}],"name":"getWinningsForAddress","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastWinner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lastWinnerAmount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"lotteryOperator","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxTickets","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"operatorTotalCommission","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"restartDraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"ticketCommission","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ticketPrice","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tickets","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"winnings","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+        ];
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        async function buyTickets() {
+            const numTickets = document.getElementById('num_tickets').value;
+            const accounts = await web3.eth.requestAccounts();
+            const sender = accounts[0];
+
+            try {
+                const result = await contract.methods.BuyTickets().send({
+                    from: sender,
+                    value: numTickets * 0.01 * 10**18, // Convert ETH to Wei
+                });
+                console.log(result);
+                alert('Tickets bought successfully!');
+            } catch (error) {
+                console.error(error);
+                alert('Failed to buy tickets.');
+            }
+        }
+
+        async function checkWinnings() {
+            const accounts = await web3.eth.requestAccounts();
+            const sender = accounts[0];
+
+            try {
+                const winnings = await contract.methods.getWinningsForAddress(sender).call();
+                document.getElementById('winnings').innerText = `Your Winnings: ${web3.utils.fromWei(winnings)} ETH`;
+            } catch (error) {
+                console.error(error);
+                alert('Failed to check winnings.');
+            }
+        }
+
+        async function withdrawWinnings() {
+            const accounts = await web3.eth.requestAccounts();
+            const sender = accounts[0];
+
+            try {
+                const result = await contract.methods.WithdrawWinnings().send({ from: sender });
+                console.log(result);
+                alert('Winnings withdrawn successfully!');
+            } catch (error) {
+                console.error(error);
+                alert('Failed to withdraw winnings.');
+            }
+        }
+
+        async function drawWinner() {
+            const accounts = await web3.eth.requestAccounts();
+            const sender = accounts[0];
+
+            try {
+                const result = await contract.methods.DrawWinnerTicket().send({ from: sender });
+                console.log(result);
+                alert('Winner drawn successfully!');
+            } catch (error) {
+                console.error(error);
+                alert('Failed to draw winner.');
+            }
+        }
+
+        async function restartDraw() {
+            const accounts = await web3.eth.requestAccounts();
+            const sender = accounts[0];
+
+            try {
+                const result = await contract.methods.restartDraw().send({ from: sender });
+                console.log(result);
+                alert('Draw restarted successfully!');
+            } catch (error) {
+                console.error(error);
+                alert('Failed to restart draw.');
+            }
+        }
+
+        async function withdrawCommission() {
+            const accounts = await web3.eth.requestAccounts();
+            const sender = accounts[0];
+
+            try {
+                const result = await contract.methods.WithdrawCommission().send({ from: sender });
+                console.log(result);
+                alert('Commission withdrawn successfully!');
+            } catch (error) {
+                console.error(error);
+                alert('Failed to withdraw commission.');
+            }
+        }
+
+        async function updateLotteryInfo() {
+            try {
+                const expiration = await contract.methods.expiration().call();
+                document.getElementById('expiration').innerText = new Date(expiration * 1000).toLocaleString();
+
+                const lastWinner = await contract.methods.lastWinner().call();
+                document.getElementById('lastWinner').innerText = lastWinner;
+
+                const lastWinnerAmount = await contract.methods.lastWinnerAmount().call();
+                document.getElementById('lastWinnerAmount').innerText = web3.utils.fromWei(lastWinnerAmount) + " ETH";
+
+                const operatorTotalCommission = await contract.methods.operatorTotalCommission().call();
+                document.getElementById('operatorTotalCommission').innerText = web3.utils.fromWei(operatorTotalCommission) + " ETH";
+
+                const currentWinningReward = await contract.methods.CurrentWinningReward().call();
+                document.getElementById('currentWinningReward').innerText = web3.utils.fromWei(currentWinningReward) + " ETH";
+
+                const remainingTickets = await contract.methods.RemainingTickets().call();
+                document.getElementById('remainingTickets').innerText = remainingTickets;
+            } catch (error) {
+                console.error(error);
+                alert('Failed to fetch lottery information.');
+            }
+        }
+
+        window.onload = function () {
+            updateLotteryInfo();
+        };
+    </script>
+
+</body>
+</html>
